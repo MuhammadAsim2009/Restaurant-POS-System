@@ -90,6 +90,51 @@ switch ("$method:$action") {
         jsonResponse(['success' => true, 'message' => 'Item deleted.']);
         break;
 
+    // POST — Create category (manager only)
+    case 'POST:cat-create':
+        requireManager();
+        $body = json_decode(file_get_contents('php://input'), true);
+        $name = trim($body['name'] ?? '');
+        $icon = trim($body['icon'] ?? '🍽️');
+        if (!$name) jsonResponse(['success' => false, 'message' => 'Name is required.'], 400);
+        $sort = $db->query("SELECT COALESCE(MAX(sort_order),0)+1 FROM categories")->fetchColumn();
+        $db->prepare("INSERT INTO categories (name, icon, sort_order, is_active) VALUES (?,?,?,1)")->execute([$name, $icon, $sort]);
+        jsonResponse(['success' => true, 'message' => 'Category created.', 'id' => $db->lastInsertId()]);
+        break;
+
+    // PUT — Update category (manager only)
+    case 'PUT:cat-update':
+        requireManager();
+        $body = json_decode(file_get_contents('php://input'), true);
+        $id   = $body['id'] ?? null;
+        $name = trim($body['name'] ?? '');
+        $icon = trim($body['icon'] ?? '🍽️');
+        if (!$id || !$name) jsonResponse(['success' => false, 'message' => 'ID and name required.'], 400);
+        $db->prepare("UPDATE categories SET name=?, icon=? WHERE id=?")->execute([$name, $icon, $id]);
+        jsonResponse(['success' => true, 'message' => 'Category updated.']);
+        break;
+
+    // DELETE — Remove category (manager only)
+    case 'DELETE:cat-delete':
+        requireManager();
+        $id = $_GET['id'] ?? null;
+        if (!$id) jsonResponse(['success' => false, 'message' => 'ID required.'], 400);
+        $count = $db->prepare("SELECT COUNT(*) FROM menu_items WHERE category_id = ?");
+        $count->execute([$id]);
+        if ($count->fetchColumn() > 0) {
+            jsonResponse(['success' => false, 'message' => 'Cannot delete: category has items. Remove or move them first.'], 400);
+        }
+        $db->prepare("DELETE FROM categories WHERE id = ?")->execute([$id]);
+        jsonResponse(['success' => true, 'message' => 'Category deleted.']);
+        break;
+
+    // GET all categories (including inactive, for management)
+    case 'GET:cat-list':
+        requireManager();
+        $cats = $db->query("SELECT *, (SELECT COUNT(*) FROM menu_items WHERE category_id = categories.id) as item_count FROM categories ORDER BY sort_order")->fetchAll();
+        jsonResponse(['success' => true, 'data' => $cats]);
+        break;
+
     default:
         jsonResponse(['success' => false, 'message' => 'Unknown action.'], 400);
 }

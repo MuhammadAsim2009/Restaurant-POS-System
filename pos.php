@@ -412,7 +412,6 @@ $user = currentUser();
 <script>
 // ── State ─────────────────────────────────────────────
 let menuData = [];
-const EMOJIS = { 1:'🍔', 2:'🎁', 3:'🍟', 4:'🥤', 5:'🍦', 6:'🍗' };
 let allTables = [];
 
 // Multi-Tab Cart State
@@ -510,7 +509,7 @@ function renderAllItems(search = '') {
   let html = '';
   menuData.forEach(cat => {
     cat.items.filter(it => !search || it.name.toLowerCase().includes(search.toLowerCase())).forEach(it => {
-      const emoji = EMOJIS[it.category_id] || '🍽️';
+      const emoji = cat.icon || '🍽️';
       html += `
         <div class="item-card ${!it.is_available ? 'unavailable' : ''}" onclick="${it.is_available ? `addToCart(${it.id},'${it.name.replace(/'/g,"\\'")}','${emoji}',${it.price})` : ''}">
           <span class="item-emoji">${emoji}</span>
@@ -534,7 +533,7 @@ function filterCat(catId, btn) {
   const cats = catId === 'all' ? menuData : menuData.filter(c => c.id == catId);
   cats.forEach(cat => {
     cat.items.forEach(it => {
-      const emoji = EMOJIS[it.category_id] || '🍽️';
+      const emoji = cat.icon || '🍽️';
       html += `
         <div class="item-card ${!it.is_available ? 'unavailable' : ''}" onclick="${it.is_available ? `addToCart(${it.id},'${it.name.replace(/'/g,"\\'")}','${emoji}',${it.price})` : ''}">
           <span class="item-emoji">${emoji}</span>

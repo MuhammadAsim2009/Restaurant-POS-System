@@ -46,20 +46,29 @@ requireLogin();
   </style>
 </head>
 <body>
-  <div class="kds-header">
-    <div style="font-size:28px">🍳</div>
-    <h1>Khan Fast Food — Kitchen Display</h1>
-    <div class="refresh-indicator" id="refreshIndicator">Next refresh in <span id="countdown">10</span>s</div>
-    <div class="kds-time" id="kdsTime"></div>
-  </div>
-
-  <div class="kds-grid" id="kdsGrid">
-    <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;height:50vh">
-      <div class="spinner" style="width:50px;height:50px"></div>
+<div class="app-layout">
+  <?php include __DIR__ . '/partials/sidebar.php'; ?>
+  <div class="main-content" style="display:flex;flex-direction:column;overflow:hidden;">
+    <div class="topbar">
+      <div class="topbar-title">🍳 Kitchen Display</div>
+      <div class="topbar-actions">
+        <div class="refresh-indicator" id="refreshIndicator" style="font-size:13px;color:var(--text-muted);">Next refresh in <span id="countdown">10</span>s</div>
+        <div class="kds-time" id="kdsTime"></div>
+        <a href="/Resturent_POS/pos.php" class="btn btn-brand"><i class="fas fa-plus"></i> New Order</a>
+      </div>
+    </div>
+    <div class="page-body" style="overflow-y:auto;flex:1;">
+      <div class="kds-grid" id="kdsGrid">
+        <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;height:50vh">
+          <div class="spinner" style="width:50px;height:50px"></div>
+        </div>
+      </div>
     </div>
   </div>
+</div>
 
 <div id="toastContainer" class="toast-container"></div>
+
 <script src="/Resturent_POS/js/app.js"></script>
 <script>
 let refreshTimer = 10;

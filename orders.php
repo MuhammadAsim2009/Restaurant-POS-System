@@ -12,6 +12,7 @@ requireLogin();
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     .filter-bar { display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
     .order-table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
     .status-filter-btn {
       padding:7px 14px; border-radius:99px; border:1px solid var(--border);
@@ -20,6 +21,26 @@ requireLogin();
     }
     .status-filter-btn.active { background:var(--brand); border-color:var(--brand); color:#000; }
     .order-row-details { font-size:12px; color:var(--text-muted); }
+
+    @media print {
+      body > * { display: none !important; }
+      #receiptPrintArea { display: block !important; }
+    }
+    #receiptPrintArea {
+      display: none;
+      font-family: 'Courier New', monospace;
+      width: 300px;
+      margin: 0 auto;
+      color: #000;
+      background: #fff;
+      padding: 16px;
+    }
+    .receipt-logo { text-align:center; font-size:18px; font-weight:bold; margin-bottom:4px; }
+    .receipt-sub  { text-align:center; font-size:11px; margin-bottom:8px; }
+    .receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }
+    .receipt-row { display:flex; justify-content:space-between; font-size:12px; margin:3px 0; }
+    .receipt-total { display:flex; justify-content:space-between; font-size:14px; font-weight:bold; margin-top:6px; }
+    .receipt-footer { text-align:center; font-size:11px; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -74,13 +95,19 @@ requireLogin();
   <div class="modal" style="max-width:540px">
     <div class="modal-header">
       <div class="modal-title" id="orderDetailTitle">Order Details</div>
-      <button class="modal-close" onclick="closeModal('orderDetailModal')"><i class="fas fa-times"></i></button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="printReceipt()" title="Print Receipt"><i class="fas fa-print"></i> Print</button>
+        <button class="modal-close" onclick="closeModal('orderDetailModal')"><i class="fas fa-times"></i></button>
+      </div>
     </div>
     <div id="orderDetailBody"></div>
   </div>
 </div>
 
 <div id="toastContainer" class="toast-container"></div>
+
+<!-- Hidden Receipt Print Area -->
+<div id="receiptPrintArea"></div>
 <script src="/Resturent_POS/js/app.js"></script>
 <script>
 let currentFilter = 'all';
@@ -146,10 +173,13 @@ async function updateStatus(id, status) {
   } catch(_) {}
 }
 
+let _currentOrder = null;
+
 async function viewOrder(id) {
   try {
     const res = await api(`orders.php?action=detail&id=${id}`);
     const o = res.data;
+    _currentOrder = o;
     document.getElementById('orderDetailTitle').textContent = `Order ${o.order_number}`;
     document.getElementById('orderDetailBody').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
@@ -174,7 +204,45 @@ async function viewOrder(id) {
   } catch(_) {}
 }
 
+function printReceipt() {
+  const o = _currentOrder;
+  if (!o) return;
+
+  const itemsHtml = o.items.map(i => `
+    <div class="receipt-row"><span>${i.item_name} x${i.quantity}</span><span>${formatPKR(i.subtotal)}</span></div>`).join('');
+
+  const discountHtml = parseFloat(o.discount) > 0
+    ? `<div class="receipt-row"><span>Discount</span><span>- ${formatPKR(o.discount)}</span></div>` : '';
+
+  const payHtml = o.payment
+    ? `<div class="receipt-row"><span>Cash Paid</span><span>${formatPKR(o.payment.amount_paid)}</span></div>
+       <div class="receipt-row"><span>Change</span><span>${formatPKR(o.payment.change_given)}</span></div>` : '';
+
+  document.getElementById('receiptPrintArea').innerHTML = `
+    <div class="receipt-logo">🍔 Khan Fast Food</div>
+    <div class="receipt-sub">Thank you for your visit!</div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-row"><span>Order #</span><span>${o.order_number}</span></div>
+    <div class="receipt-row"><span>Type</span><span style="text-transform:capitalize">${o.order_type}</span></div>
+    ${o.table_number ? `<div class="receipt-row"><span>Table</span><span>${o.table_number}</span></div>` : ''}
+    <div class="receipt-row"><span>Cashier</span><span>${o.cashier_name}</span></div>
+    <div class="receipt-row"><span>Date</span><span>${formatDateTime(o.created_at)}</span></div>
+    <div class="receipt-divider"></div>
+    ${itemsHtml}
+    <div class="receipt-divider"></div>
+    <div class="receipt-row"><span>Subtotal</span><span>${formatPKR(o.subtotal)}</span></div>
+    <div class="receipt-row"><span>Tax (5%)</span><span>${formatPKR(o.tax)}</span></div>
+    ${discountHtml}
+    <div class="receipt-total"><span>TOTAL</span><span>${formatPKR(o.total)}</span></div>
+    <div class="receipt-divider"></div>
+    ${payHtml}
+    <div class="receipt-footer">---- Thank You! Come Again ----<br>Khan Fast Food POS System</div>
+  `;
+  window.print();
+}
+
 loadOrders();
+
 </script>
 </body>
 </html>
