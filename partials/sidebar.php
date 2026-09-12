@@ -10,7 +10,7 @@ $isManager = isManager();
   <div class="sidebar-brand">
     <div class="brand-logo">🍔</div>
     <div>
-      <div class="brand-name">Khan Fast Food</div>
+      <div class="brand-name">Resturant</div>
       <div class="brand-sub">POS System</div>
     </div>
   </div>
@@ -18,7 +18,12 @@ $isManager = isManager();
   <nav class="sidebar-nav">
     <div class="nav-section-title">Main</div>
     <a href="/Resturent_POS/dashboard.php" class="nav-item <?= $current==='dashboard'?'active':'' ?>">
-      <i class="fas fa-th-large"></i> Dashboard
+      <svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="currentColor" style="margin-right:8px;">
+        <rect x="3" y="3" width="7" height="11" rx="2.5" />
+        <rect x="3" y="16" width="7" height="5" rx="2.5" />
+        <rect x="14" y="3" width="7" height="5" rx="2.5" />
+        <rect x="14" y="10" width="7" height="11" rx="2.5" />
+      </svg> Dashboard
     </a>
     <a href="/Resturent_POS/pos.php" class="nav-item <?= $current==='pos'?'active':'' ?>">
       <i class="fas fa-cash-register"></i> New Order

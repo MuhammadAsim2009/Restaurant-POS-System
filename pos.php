@@ -695,6 +695,12 @@ function getTotal() {
 function openPaymentModal() {
   const activeCart = getActiveCart();
   if (activeCart.items.length === 0) return;
+  
+  if (activeCart.orderType === 'dine-in' && !activeCart.tableId) {
+    showToast('Please select a table before checkout!', 'error');
+    return;
+  }
+
   const total = getTotal();
   document.getElementById('payTotalDisplay').textContent = formatPKR(total);
   document.getElementById('cashReceived').value = '';

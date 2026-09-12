@@ -32,14 +32,13 @@ requireManager();
     <div class="topbar">
       <div class="topbar-title">📈 Reports & Analytics</div>
       <div class="topbar-actions">
-        <button class="btn btn-outline" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
       </div>
     </div>
     <div class="page-body">
       <!-- Date Filters -->
       <div class="date-filter">
-        <button class="preset-btn" onclick="setPreset('today')">Today</button>
-        <button class="preset-btn active" onclick="setPreset('month')">This Month</button>
+        <button class="preset-btn active" onclick="setPreset('today')">Today</button>
+        <button class="preset-btn" onclick="setPreset('month')">This Month</button>
         <button class="preset-btn" onclick="setPreset('week')">This Week</button>
         <div style="display:flex;align-items:center;gap:8px;margin-left:10px">
           <input type="date" class="form-control" id="fromDate" style="width:auto">
@@ -88,8 +87,10 @@ let dailyChart, categoryChart, paymentChart;
 let reportData = null;
 
 function setPreset(type) {
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.getAttribute('onclick') === `setPreset('${type}')`) b.classList.add('active');
+  });
   const today = new Date();
   let from, to = today.toISOString().slice(0,10);
   if (type === 'today') { from = to; }
@@ -222,7 +223,7 @@ function exportCSV() {
 }
 
 // Init
-setPreset('month');
+setPreset('today');
 </script>
 </body>
 </html>

@@ -75,7 +75,7 @@ requireLogin();
   <?php include __DIR__ . '/partials/sidebar.php'; ?>
   <div class="main-content">
     <div class="topbar">
-      <div>
+      <div style="flex:1;">
         <div class="topbar-title">🪑 Table Management</div>
       </div>
       <div class="topbar-actions">

@@ -48,7 +48,7 @@ $user = currentUser();
   <!-- Main Content -->
   <div class="main-content">
     <div class="topbar">
-      <div>
+      <div style="flex:1;">
         <div class="topbar-title">Dashboard</div>
         <div class="topbar-subtitle" id="currentDate"></div>
       </div>
