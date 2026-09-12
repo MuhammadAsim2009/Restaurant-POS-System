@@ -97,7 +97,9 @@ $user = currentUser();
       <div class="charts-grid" style="margin-top:20px">
         <div class="chart-card">
           <div class="chart-title">💳 Payment Methods Today</div>
-          <canvas id="paymentChart" height="110"></canvas>
+          <div style="max-width: 240px; margin: 0 auto;">
+            <canvas id="paymentChart"></canvas>
+          </div>
         </div>
         <div class="chart-card">
           <div class="chart-title">📋 Recent Activity</div>

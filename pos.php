@@ -1,4 +1,9 @@
 <?php
+// Prevent caching
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 require_once __DIR__ . '/config/session.php';
 requireLogin();
 $user = currentUser();
@@ -13,17 +18,17 @@ $user = currentUser();
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body { overflow: hidden; }
-    .pos-layout { display: flex; height: 100vh; margin-left: var(--sidebar-w); }
+    .pos-layout { display: flex; height: 100vh; margin-left: var(--sidebar-w); overflow: hidden; }
 
     /* Left: Menu Panel */
     .menu-panel {
       flex: 1; display: flex; flex-direction: column;
-      background: var(--bg-primary); overflow: hidden;
+      background: var(--bg-primary); overflow: hidden; min-height: 0;
     }
     .pos-header {
       padding: 16px 20px; border-bottom: 1px solid var(--border);
       background: var(--bg-secondary);
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
     }
     .pos-header h1 { font-size: 18px; font-weight: 700; flex:1; }
     .search-box { position: relative; }
@@ -59,15 +64,25 @@ $user = currentUser();
 
     /* Items Grid */
     .items-grid {
-      flex: 1; overflow-y: auto; padding: 16px 20px;
+      flex: 1; overflow-y: auto; padding: 16px 20px; min-height: 0;
       display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
-      gap: 14px; align-content: start;
+      grid-auto-rows: max-content;
+      gap: 14px;
+      align-content: start;
+      align-items: start;
     }
+    /* Fixed scrollbar for items grid */
+    .items-grid::-webkit-scrollbar { width: 8px; }
+    .items-grid::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    .items-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    .items-grid::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
     .item-card {
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: 16px 14px;
       cursor: pointer; transition: all var(--transition);
-      position: relative; overflow: hidden;
+      position: relative;
+      display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
     }
     .item-card:hover {
       border-color: var(--border-accent);
@@ -76,32 +91,60 @@ $user = currentUser();
     }
     .item-card:active { transform: scale(0.97); }
     .item-card.unavailable { opacity: 0.45; cursor: not-allowed; }
-    .item-emoji { font-size: 38px; margin-bottom: 10px; display: block; text-align: center; }
+    .item-emoji { font-size: 38px; line-height: 40px; height: 40px; margin-bottom: 10px; display: block; text-align: center; }
     .item-name  { font-size: 13px; font-weight: 600; margin-bottom: 4px; text-align: center; }
     .item-desc  { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; text-align: center; line-height: 1.4; }
-    .item-price { font-size: 15px; font-weight: 800; color: var(--brand); text-align: center; }
+    .item-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; margin-top: auto; padding-top: 10px;
+    }
+    .item-price { font-size: 15px; font-weight: 800; color: var(--brand); margin-top: 0; text-align: left; }
     .item-add-btn {
-      position: absolute; bottom: 10px; right: 10px;
       width: 28px; height: 28px; border-radius: 50%;
       background: var(--brand); color: #000;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700; opacity: 0;
+      font-size: 14px; font-weight: 700; opacity: 0.6;
       transition: all var(--transition);
     }
     .item-card:hover .item-add-btn { opacity: 1; }
 
     /* Right: Cart Panel */
     .cart-panel {
-      width: 340px; flex-shrink: 0;
+      width: 360px; flex-shrink: 0;
       background: var(--bg-secondary);
       border-left: 1px solid var(--border);
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: column; overflow: hidden; min-height: 0;
     }
+    
+    /* Cart Tabs Bar */
+    .cart-tabs-bar {
+      display: flex; align-items: center; background: #000;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .cart-tab-list {
+      display: flex; flex: 1; overflow-x: auto; scrollbar-width: none;
+    }
+    .cart-tab-list::-webkit-scrollbar { display: none; }
+    .order-tab {
+      padding: 12px 16px; border-right: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .order-tab.active { background: var(--bg-secondary); color: var(--text-primary); border-top: 2px solid var(--brand); }
+    .order-tab-close { opacity: 0.5; cursor: pointer; }
+    .order-tab-close:hover { opacity: 1; color: var(--accent-red); }
+    .cart-add-tab {
+      padding: 12px 16px; background: transparent; border: none; color: var(--brand);
+      cursor: pointer; font-size: 14px;
+    }
+    .cart-add-tab:hover { background: rgba(245,158,11,0.1); }
+
     .cart-header {
-      padding: 18px 20px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
     }
-    .cart-header h2 { font-size: 16px; font-weight: 700; flex:1; }
+    .cart-header h2 { font-size: 15px; font-weight: 700; flex:1; margin:0;}
     .cart-count {
       background: var(--brand); color: #000;
       border-radius: 99px; padding: 3px 10px;
@@ -110,8 +153,8 @@ $user = currentUser();
 
     /* Order Type */
     .order-type-bar {
-      padding: 12px 16px; border-bottom: 1px solid var(--border);
-      display: flex; gap: 6px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      display: flex; gap: 6px; flex-shrink: 0;
     }
     .order-type-btn {
       flex:1; padding: 7px; border-radius: 8px;
@@ -123,15 +166,29 @@ $user = currentUser();
       background: rgba(245,158,11,0.15); border-color: var(--brand); color: var(--brand);
     }
 
+    /* Table Selector */
+    .table-select { padding: 10px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .table-select select {
+      width:100%; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 10px; color: var(--text-primary); font-size:13px; outline:none;
+    }
+    .table-select select option { background: #0D1228; color: #fff; }
+    .table-select select:focus { border-color: var(--brand); }
+
     /* Cart Items */
-    .cart-items { flex:1; overflow-y: auto; padding: 12px 16px; }
+    .cart-items { flex:1; overflow-y: auto; padding: 12px 16px; min-height: 0; }
+    .cart-items::-webkit-scrollbar { width: 6px; }
+    .cart-items::-webkit-scrollbar-track { background: transparent; }
+    .cart-items::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    
     .cart-empty {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center; height: 100%;
       color: var(--text-muted); gap: 12px;
     }
     .cart-empty i { font-size: 40px; opacity: 0.3; }
-    .cart-empty p { font-size: 13px; }
+    .cart-empty p { font-size: 13px; text-align: center; }
 
     .cart-item {
       display: flex; align-items: center; gap: 10px;
@@ -158,7 +215,7 @@ $user = currentUser();
     /* Cart Totals */
     .cart-summary {
       padding: 14px 16px; border-top: 1px solid var(--border);
-      background: rgba(0,0,0,0.2);
+      background: rgba(0,0,0,0.2); flex-shrink: 0;
     }
     .summary-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: var(--text-secondary); }
     .summary-row.total { font-size: 17px; font-weight: 800; color: var(--text-primary); border-top: 1px solid var(--border); margin-top: 8px; padding-top: 10px; }
@@ -173,16 +230,7 @@ $user = currentUser();
     .discount-row input:focus { border-color: var(--brand); }
 
     /* Cart Actions */
-    .cart-actions { padding: 12px 16px; display: flex; gap: 8px; border-top: 1px solid var(--border); }
-
-    /* Table Selector */
-    .table-select { padding: 10px 16px; border-bottom: 1px solid var(--border); }
-    .table-select select {
-      width:100%; background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); border-radius: 8px;
-      padding: 8px 10px; color: var(--text-primary); font-size:13px; outline:none;
-    }
-    .table-select select:focus { border-color: var(--brand); }
+    .cart-actions { padding: 12px 16px; display: flex; gap: 8px; border-top: 1px solid var(--border); flex-shrink: 0; }
 
     /* Payment Modal */
     .payment-modal { max-width: 440px; }
@@ -244,8 +292,15 @@ $user = currentUser();
 
     <!-- ── RIGHT: Cart Panel ────────────────────────── -->
     <div class="cart-panel">
+      
+      <!-- Multi-Tab Support -->
+      <div class="cart-tabs-bar">
+        <div class="cart-tab-list" id="cartTabList"></div>
+        <button class="cart-add-tab" onclick="addNewCartTab()" title="Start New Order (Simultaneous)"><i class="fas fa-plus"></i></button>
+      </div>
+
       <div class="cart-header">
-        <h2><i class="fas fa-shopping-cart"></i> Cart</h2>
+        <h2 id="cartHeaderTitle"><i class="fas fa-shopping-cart"></i> Cart</h2>
         <span class="cart-count" id="cartCount">0</span>
         <button class="btn btn-ghost btn-sm" onclick="clearCart()" id="clearBtn" style="display:none">
           <i class="fas fa-trash-alt"></i>
@@ -254,14 +309,14 @@ $user = currentUser();
 
       <!-- Order Type -->
       <div class="order-type-bar">
-        <button class="order-type-btn active" id="ot-dine" onclick="setOrderType('dine-in',this)">🪑 Dine-In</button>
-        <button class="order-type-btn" id="ot-take" onclick="setOrderType('takeaway',this)">🥡 Takeaway</button>
-        <button class="order-type-btn" id="ot-del"  onclick="setOrderType('delivery',this)">🛵 Delivery</button>
+        <button class="order-type-btn active" id="ot-dine-in" onclick="setOrderType('dine-in')">🪑 Dine-In</button>
+        <button class="order-type-btn" id="ot-takeaway" onclick="setOrderType('takeaway')">🥡 Takeaway</button>
+        <button class="order-type-btn" id="ot-delivery"  onclick="setOrderType('delivery')">🛵 Delivery</button>
       </div>
 
       <!-- Table Selector (shown for dine-in) -->
       <div class="table-select" id="tableSelectWrap">
-        <select id="tableSelect"><option value="">— Select Table —</option></select>
+        <select id="tableSelect" onchange="updateTable()"><option value="">— Select Table —</option></select>
       </div>
 
       <!-- Cart Items -->
@@ -276,7 +331,7 @@ $user = currentUser();
       <div class="cart-summary" id="cartSummary" style="display:none">
         <!-- Discount -->
         <div class="discount-row">
-          <input type="number" id="discountInput" placeholder="Discount (Rs.)" min="0" step="10" oninput="updateTotals()">
+          <input type="number" id="discountInput" placeholder="Discount (Rs.)" min="0" step="10" oninput="updateDiscount()">
           <span style="font-size:12px;color:var(--text-muted)">off</span>
         </div>
 
@@ -342,12 +397,12 @@ $user = currentUser();
   <div class="modal receipt-modal">
     <div class="modal-header">
       <div class="modal-title">🧾 Receipt</div>
-      <button class="modal-close" onclick="closeModal('receiptModalOverlay');newOrder()"><i class="fas fa-times"></i></button>
+      <button class="modal-close" onclick="closeModal('receiptModalOverlay');removeCurrentCart()"><i class="fas fa-times"></i></button>
     </div>
     <div class="receipt-body" id="receiptBody"></div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn btn-outline w-full" onclick="printReceipt()"><i class="fas fa-print"></i> Print</button>
-      <button class="btn btn-brand w-full" onclick="closeModal('receiptModalOverlay');newOrder()"><i class="fas fa-plus"></i> New Order</button>
+      <button class="btn btn-brand w-full" onclick="closeModal('receiptModalOverlay');removeCurrentCart()"><i class="fas fa-check"></i> Done</button>
     </div>
   </div>
 </div>
@@ -356,15 +411,80 @@ $user = currentUser();
 <script src="/Resturent_POS/js/app.js"></script>
 <script>
 // ── State ─────────────────────────────────────────────
-let menuData    = [];  // [{id, name, icon, items:[...]}]
-let cart        = [];  // [{id, name, emoji, price, qty}]
-let orderType   = 'dine-in';
-let payMethod   = 'cash';
+let menuData = [];
+const EMOJIS = { 1:'🍔', 2:'🎁', 3:'🍟', 4:'🥤', 5:'🍦', 6:'🍗' };
+let allTables = [];
+
+// Multi-Tab Cart State
+let orderCounter = 1;
+let carts = [createCartObject()];
+let activeCartId = carts[0].id;
+let payMethod = 'cash';
 let lastOrderData = null;
 
-const EMOJIS = { 1:'🍔', 2:'🎁', 3:'🍟', 4:'🥤', 5:'🍦', 6:'🍗' };
+function createCartObject() {
+  return {
+    id: 'cart_' + Date.now(),
+    name: 'Order ' + (orderCounter++),
+    items: [],
+    orderType: 'dine-in',
+    tableId: '',
+    discount: 0
+  };
+}
 
-// ── Load Menu ─────────────────────────────────────────
+function getActiveCart() {
+  return carts.find(c => c.id === activeCartId);
+}
+
+// ── Multi-Tab UI Logic ────────────────────────────────
+function renderCartTabs() {
+  const container = document.getElementById('cartTabList');
+  container.innerHTML = carts.map(c => `
+    <div class="order-tab ${c.id === activeCartId ? 'active' : ''}" onclick="switchCart('${c.id}')">
+      ${c.name} <span style="opacity:0.6">(${c.items.reduce((s,i)=>s+i.qty,0)})</span>
+      ${carts.length > 1 ? `<i class="fas fa-times order-tab-close" onclick="event.stopPropagation(); closeCart('${c.id}')"></i>` : ''}
+    </div>
+  `).join('');
+  
+  // Render current cart contents
+  renderCart();
+}
+
+function addNewCartTab() {
+  const newCart = createCartObject();
+  carts.push(newCart);
+  activeCartId = newCart.id;
+  renderCartTabs();
+}
+
+function switchCart(id) {
+  activeCartId = id;
+  renderCartTabs();
+}
+
+function closeCart(id) {
+  const cartToClose = carts.find(c => c.id === id);
+  if (cartToClose.items.length > 0) {
+    if (!confirm(`Cancel ${cartToClose.name}?`)) return;
+  }
+  carts = carts.filter(c => c.id !== id);
+  if (activeCartId === id) {
+    activeCartId = carts[carts.length - 1].id;
+  }
+  renderCartTabs();
+}
+
+function removeCurrentCart() {
+  carts = carts.filter(c => c.id !== activeCartId);
+  if (carts.length === 0) {
+    carts.push(createCartObject());
+  }
+  activeCartId = carts[carts.length - 1].id;
+  renderCartTabs();
+}
+
+// ── Load Menu & Tables ────────────────────────────────
 async function loadMenu() {
   try {
     const res = await api('menu.php?action=pos');
@@ -388,7 +508,6 @@ function buildCategoryTabs() {
 function renderAllItems(search = '') {
   const grid = document.getElementById('itemsGrid');
   let html = '';
-  let count = 0;
   menuData.forEach(cat => {
     cat.items.filter(it => !search || it.name.toLowerCase().includes(search.toLowerCase())).forEach(it => {
       const emoji = EMOJIS[it.category_id] || '🍽️';
@@ -397,10 +516,11 @@ function renderAllItems(search = '') {
           <span class="item-emoji">${emoji}</span>
           <div class="item-name">${it.name}</div>
           <div class="item-desc">${it.description || ''}</div>
-          <div class="item-price">${formatPKR(it.price)}</div>
-          ${it.is_available ? '<div class="item-add-btn"><i class="fas fa-plus"></i></div>' : '<div style="text-align:center;font-size:10px;color:var(--accent-red);margin-top:4px">Not Available</div>'}
+          <div class="item-bottom">
+            <div class="item-price">${formatPKR(it.price)}</div>
+            ${it.is_available ? '<div class="item-add-btn"><i class="fas fa-plus"></i></div>' : '<div style="font-size:10px;color:var(--accent-red);">N/A</div>'}
+          </div>
         </div>`;
-      count++;
     });
   });
   grid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>No items found</p></div>`;
@@ -420,8 +540,10 @@ function filterCat(catId, btn) {
           <span class="item-emoji">${emoji}</span>
           <div class="item-name">${it.name}</div>
           <div class="item-desc">${it.description || ''}</div>
-          <div class="item-price">${formatPKR(it.price)}</div>
-          ${it.is_available ? '<div class="item-add-btn"><i class="fas fa-plus"></i></div>' : ''}
+          <div class="item-bottom">
+            <div class="item-price">${formatPKR(it.price)}</div>
+            ${it.is_available ? '<div class="item-add-btn"><i class="fas fa-plus"></i></div>' : '<div style="font-size:10px;color:var(--accent-red);">N/A</div>'}
+          </div>
         </div>`;
     });
   });
@@ -430,31 +552,82 @@ function filterCat(catId, btn) {
 
 const filterItems = debounce((val) => renderAllItems(val), 250);
 
-// ── Cart Logic ────────────────────────────────────────
+async function loadTables() {
+  try {
+    const res = await api('tables.php?action=list');
+    allTables = res.data.filter(t => t.status === 'available');
+    renderCart(); // Will populate select
+  } catch(_) {}
+}
+
+// ── Cart Core Logic ───────────────────────────────────
 function addToCart(id, name, emoji, price) {
-  const existing = cart.find(i => i.id === id);
+  const activeCart = getActiveCart();
+  const existing = activeCart.items.find(i => i.id === id);
   if (existing) { existing.qty++; }
-  else { cart.push({ id, name, emoji, price: parseFloat(price), qty: 1 }); }
-  renderCart();
-  showToast(`${name} added`, 'success', 1500);
+  else { activeCart.items.push({ id, name, emoji, price: parseFloat(price), qty: 1 }); }
+  renderCartTabs();
+  showToast(`${name} added to ${activeCart.name}`, 'success', 1500);
 }
 
 function changeQty(id, delta) {
-  const item = cart.find(i => i.id === id);
+  const activeCart = getActiveCart();
+  const item = activeCart.items.find(i => i.id === id);
   if (!item) return;
   item.qty += delta;
-  if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
-  renderCart();
+  if (item.qty <= 0) activeCart.items = activeCart.items.filter(i => i.id !== id);
+  renderCartTabs();
 }
 
 function clearCart() {
-  cart = [];
-  document.getElementById('discountInput').value = '';
+  const activeCart = getActiveCart();
+  activeCart.items = [];
+  activeCart.discount = 0;
+  activeCart.tableId = '';
+  renderCartTabs();
+}
+
+function setOrderType(type) {
+  const activeCart = getActiveCart();
+  activeCart.orderType = type;
+  if (type !== 'dine-in') activeCart.tableId = '';
+  renderCart();
+}
+
+function updateTable() {
+  const activeCart = getActiveCart();
+  activeCart.tableId = document.getElementById('tableSelect').value;
+}
+
+function updateDiscount() {
+  const activeCart = getActiveCart();
+  activeCart.discount = parseFloat(document.getElementById('discountInput').value) || 0;
   renderCart();
 }
 
 function renderCart() {
-  const count = cart.reduce((s, i) => s + i.qty, 0);
+  const activeCart = getActiveCart();
+  
+  // Set UI elements based on activeCart state
+  document.getElementById('cartHeaderTitle').innerHTML = `<i class="fas fa-shopping-cart"></i> ${activeCart.name}`;
+  
+  // Order Type Buttons
+  document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`ot-${activeCart.orderType}`).classList.add('active');
+  
+  // Table Select
+  const tableWrap = document.getElementById('tableSelectWrap');
+  tableWrap.style.display = activeCart.orderType === 'dine-in' ? 'block' : 'none';
+  const sel = document.getElementById('tableSelect');
+  sel.innerHTML = '<option value="">— Select Table —</option>';
+  allTables.forEach(t => {
+    sel.innerHTML += `<option value="${t.id}" ${activeCart.tableId == t.id ? 'selected' : ''}>Table ${t.table_number} (${t.capacity} seats)</option>`;
+  });
+  
+  // Discount
+  document.getElementById('discountInput').value = activeCart.discount || '';
+
+  const count = activeCart.items.reduce((s, i) => s + i.qty, 0);
   document.getElementById('cartCount').textContent = count;
 
   const cartDiv = document.getElementById('cartItems');
@@ -462,7 +635,7 @@ function renderCart() {
   const checkoutBtn = document.getElementById('checkoutBtn');
   const clearBtns = [document.getElementById('clearBtn'), document.getElementById('clearBtn2')];
 
-  if (cart.length === 0) {
+  if (activeCart.items.length === 0) {
     cartDiv.innerHTML = `<div class="cart-empty"><i class="fas fa-shopping-cart"></i><p>Cart is empty.<br>Tap an item to add.</p></div>`;
     summaryDiv.style.display = 'none';
     checkoutBtn.disabled = true;
@@ -470,7 +643,7 @@ function renderCart() {
     return;
   }
 
-  cartDiv.innerHTML = cart.map(item => `
+  cartDiv.innerHTML = activeCart.items.map(item => `
     <div class="cart-item">
       <span class="cart-item-emoji">${item.emoji}</span>
       <div class="cart-item-info">
@@ -492,9 +665,10 @@ function renderCart() {
 }
 
 function updateTotals() {
-  const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const activeCart = getActiveCart();
+  const subtotal = activeCart.items.reduce((s,i) => s + i.price * i.qty, 0);
   const tax      = subtotal * 0.05;
-  const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+  const discount = activeCart.discount;
   const total    = Math.max(0, subtotal + tax - discount);
 
   document.getElementById('subtotalVal').textContent = formatPKR(subtotal);
@@ -511,35 +685,17 @@ function updateTotals() {
 }
 
 function getTotal() {
-  const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const activeCart = getActiveCart();
+  const subtotal = activeCart.items.reduce((s,i) => s + i.price * i.qty, 0);
   const tax      = subtotal * 0.05;
-  const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+  const discount = activeCart.discount;
   return Math.max(0, subtotal + tax - discount);
-}
-
-// ── Order Type ────────────────────────────────────────
-function setOrderType(type, btn) {
-  orderType = type;
-  document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tableSelectWrap').style.display = type === 'dine-in' ? 'block' : 'none';
-}
-
-// ── Tables ────────────────────────────────────────────
-async function loadTables() {
-  try {
-    const res = await api('tables.php?action=list');
-    const sel = document.getElementById('tableSelect');
-    sel.innerHTML = '<option value="">— Select Table —</option>';
-    res.data.filter(t => t.status === 'available').forEach(t => {
-      sel.innerHTML += `<option value="${t.id}">Table ${t.table_number} (${t.capacity} seats)</option>`;
-    });
-  } catch(_) {}
 }
 
 // ── Payment Modal ─────────────────────────────────────
 function openPaymentModal() {
-  if (cart.length === 0) return;
+  const activeCart = getActiveCart();
+  if (activeCart.items.length === 0) return;
   const total = getTotal();
   document.getElementById('payTotalDisplay').textContent = formatPKR(total);
   document.getElementById('cashReceived').value = '';
@@ -563,6 +719,9 @@ function calcChange() {
   const display = document.getElementById('changeDisplay');
   if (received > 0 && change >= 0) {
     display.style.display = 'block';
+    display.style.background = 'rgba(16,185,129,0.1)';
+    display.style.borderColor = 'rgba(16,185,129,0.3)';
+    display.style.color = 'var(--accent-green)';
     display.innerHTML = `💰 Change: <strong>${formatPKR(change)}</strong>`;
   } else if (received > 0 && change < 0) {
     display.style.display = 'block';
@@ -577,14 +736,21 @@ function calcChange() {
 
 // ── Confirm Order ─────────────────────────────────────
 async function confirmOrder() {
-  if (cart.length === 0) return;
+  const activeCart = getActiveCart();
+  if (activeCart.items.length === 0) return;
   const total      = getTotal();
-  const subtotal   = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const subtotal   = activeCart.items.reduce((s,i) => s + i.price * i.qty, 0);
   const tax        = subtotal * 0.05;
-  const discount   = parseFloat(document.getElementById('discountInput').value) || 0;
-  const tableId    = document.getElementById('tableSelect').value || null;
+  const discount   = activeCart.discount;
+  const tableId    = activeCart.tableId;
   const cashAmt    = parseFloat(document.getElementById('cashReceived').value) || total;
   const notes      = document.getElementById('orderNotes').value;
+
+  if (activeCart.orderType === 'dine-in' && !tableId) {
+    showToast('Please select a table for Dine-In!', 'error');
+    closeModal('paymentModalOverlay');
+    return;
+  }
 
   if (payMethod === 'cash' && cashAmt < total) {
     showToast('Cash received is less than total!', 'error'); return;
@@ -595,13 +761,13 @@ async function confirmOrder() {
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
   const payload = {
-    order_type: orderType,
+    order_type: activeCart.orderType,
     table_id: tableId ? parseInt(tableId) : null,
     discount,
     payment_method: payMethod,
     amount_paid: payMethod === 'cash' ? cashAmt : total,
     notes,
-    items: cart.map(i => ({
+    items: activeCart.items.map(i => ({
       menu_item_id: i.id,
       item_name: i.name,
       quantity: i.qty,
@@ -611,7 +777,7 @@ async function confirmOrder() {
 
   try {
     const res = await api('orders.php?action=create', 'POST', payload);
-    lastOrderData = { ...res, cart: [...cart], subtotal, tax, discount, total, payMethod, orderType, tableId, cashAmt };
+    lastOrderData = { ...res, cart: [...activeCart.items], subtotal, tax, discount, total, payMethod, orderType: activeCart.orderType, cashAmt };
     closeModal('paymentModalOverlay');
     showReceipt(lastOrderData);
   } catch(e) {
@@ -657,14 +823,8 @@ function printReceipt() {
   w.document.close();
 }
 
-function newOrder() {
-  clearCart();
-  loadTables();
-  document.getElementById('tableSelect').value = '';
-  document.getElementById('orderNotes').value = '';
-}
-
 // ── Init ──────────────────────────────────────────────
+renderCartTabs();
 loadMenu();
 </script>
 </body>
