@@ -7,7 +7,7 @@ requireManager();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reports — Khan Fast Food POS</title>
+  <title>Reports — Restaurant POS</title>
   <link rel="stylesheet" href="/Resturent_POS/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -218,7 +218,7 @@ function exportCSV() {
   reportData.daily.forEach(d => { csv += `${d.date},${d.orders},${d.revenue}\n`; });
   const blob = new Blob([csv], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `khan_pos_report_${document.getElementById('fromDate').value}_${document.getElementById('toDate').value}.csv`;
+  a.download = `restaurant_pos_report_${document.getElementById('fromDate').value}_${document.getElementById('toDate').value}.csv`;
   a.click();
 }
 

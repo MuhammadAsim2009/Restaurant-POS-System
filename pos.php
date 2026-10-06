@@ -13,7 +13,7 @@ $user = currentUser();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Order — Khan Fast Food POS</title>
+  <title>New Order — Restaurant POS</title>
   <link rel="stylesheet" href="/Resturent_POS/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -803,7 +803,7 @@ function showReceipt(d) {
   document.getElementById('receiptBody').innerHTML = `
     <div class="receipt-header">
       <div style="font-size:20px">🍔</div>
-      <strong style="font-size:16px;display:block">Khan Fast Food</strong>
+      <strong style="font-size:16px;display:block">Restaurant</strong>
       <div>Point of Sale System</div>
       <div style="font-size:11px;color:#666">${now}</div>
       <div style="margin-top:6px"><strong>Order#: ${d.order_number}</strong></div>
@@ -816,7 +816,7 @@ function showReceipt(d) {
     <div class="receipt-row" style="font-weight:700;font-size:15px;margin-top:6px;padding-top:6px;border-top:2px dashed #ccc"><span>TOTAL</span><span>${formatPKR(d.total)}</span></div>
     <div class="receipt-row"><span>Payment</span><span style="text-transform:uppercase">${d.payMethod}</span></div>
     ${d.payMethod==='cash' ? `<div class="receipt-row"><span>Received</span><span>${formatPKR(d.cashAmt)}</span></div><div class="receipt-row"><span>Change</span><span>${formatPKR(d.cashAmt-d.total)}</span></div>` : ''}
-    <div class="receipt-footer">Thank you for visiting Khan Fast Food!<br>Come again 😊</div>
+    <div class="receipt-footer">Thank you for visiting!<br>Come again 😊</div>
   `;
   openModal('receiptModalOverlay');
 }

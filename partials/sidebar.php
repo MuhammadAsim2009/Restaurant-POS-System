@@ -10,7 +10,7 @@ $isManager = isManager();
   <div class="sidebar-brand">
     <div class="brand-logo">🍔</div>
     <div>
-      <div class="brand-name">Resturant</div>
+      <div class="brand-name">Restaurant</div>
       <div class="brand-sub">POS System</div>
     </div>
   </div>

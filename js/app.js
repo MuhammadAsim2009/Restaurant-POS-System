@@ -1,5 +1,5 @@
 // ============================================================
-// Khan Fast Food POS — Shared JS Utilities & API Layer
+// Restaurant POS — Shared JS Utilities & API Layer
 // ============================================================
 
 const APP = {

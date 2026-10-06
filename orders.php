@@ -7,7 +7,7 @@ requireLogin();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orders — Khan Fast Food POS</title>
+  <title>Orders — Restaurant POS</title>
   <link rel="stylesheet" href="/Resturent_POS/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -219,7 +219,7 @@ function printReceipt() {
        <div class="receipt-row"><span>Change</span><span>${formatPKR(o.payment.change_given)}</span></div>` : '';
 
   document.getElementById('receiptPrintArea').innerHTML = `
-    <div class="receipt-logo">🍔 Khan Fast Food</div>
+    <div class="receipt-logo">🍔 Restaurant</div>
     <div class="receipt-sub">Thank you for your visit!</div>
     <div class="receipt-divider"></div>
     <div class="receipt-row"><span>Order #</span><span>${o.order_number}</span></div>
@@ -236,7 +236,7 @@ function printReceipt() {
     <div class="receipt-total"><span>TOTAL</span><span>${formatPKR(o.total)}</span></div>
     <div class="receipt-divider"></div>
     ${payHtml}
-    <div class="receipt-footer">---- Thank You! Come Again ----<br>Khan Fast Food POS System</div>
+    <div class="receipt-footer">---- Thank You! Come Again ----<br>Restaurant POS System</div>
   `;
   window.print();
 }

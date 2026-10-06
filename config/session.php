@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// Khan Fast Food POS — Session Guard
+// Restaurant POS — Session Guard
 // ============================================================
 
 if (session_status() === PHP_SESSION_NONE) {

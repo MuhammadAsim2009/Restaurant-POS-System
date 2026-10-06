@@ -1,5 +1,5 @@
 -- ============================================================
--- Khan Fast Food POS System — Database Schema + Seed Data
+-- Restaurant POS System — Database Schema + Seed Data
 -- Import via: phpMyAdmin → Import → Select this file
 -- ============================================================
 
@@ -8,8 +8,8 @@ START TRANSACTION;
 SET time_zone = "+05:00";
 
 -- Create and use database
-CREATE DATABASE IF NOT EXISTS `khan_pos` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `khan_pos`;
+CREATE DATABASE IF NOT EXISTS `restaurant_pos` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `restaurant_pos`;
 
 -- ============================================================
 -- Table: users
@@ -127,14 +127,11 @@ CREATE TABLE `payments` (
 -- SEED DATA
 -- ============================================================
 
--- Users (password for all = "khan123" | manager password = "manager123")
+-- Users (Default password for all accounts = "password")
 INSERT INTO `users` (`name`, `username`, `password_hash`, `role`) VALUES
-('Ahmad Khan', 'manager', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'manager'),
-('Ali Cashier', 'cashier1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'cashier'),
-('Bilal Cashier', 'cashier2', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'cashier');
-
--- NOTE: The above hash = "password" (bcrypt). Update via: password_hash('yourpassword', PASSWORD_BCRYPT)
--- For demo: username=manager password=password | username=cashier1 password=password
+('Restaurant Manager', 'manager', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'manager'),
+('Cashier One', 'cashier1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'cashier'),
+('Cashier Two', 'cashier2', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'cashier');
 
 -- Categories
 INSERT INTO `categories` (`name`, `icon`, `sort_order`) VALUES
