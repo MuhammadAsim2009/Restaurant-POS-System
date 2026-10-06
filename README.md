@@ -62,7 +62,7 @@ A modern, fast, and feature-rich **Restaurant Point of Sale (POS) & Management S
 ### Step 1: Clone or Download Repository
 Clone the repository into your web server's root directory (`htdocs` for XAMPP):
 ```bash
-git clone https://github.com/your-username/restaurant-pos.git Resturent_POS
+git clone https://github.com/MuhammadAsim2009/Restaurant-POS-System.git Resturent_POS
 ```
 *(Directory path: `xampp/htdocs/Resturent_POS`)*
 
